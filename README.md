@@ -9,7 +9,8 @@ SYNOPSIS
 
 DESCRIPTION
 
-                this command waits for a host:port to be reachable. It either executes a command directly or if no command is given it returns 0 or an error code. 
+                this command waits for a host:port to be reachable. It either executes a command directly 
+                or if no command is given it returns 0 or an error code. 
                 the first non option argument is recognized as the beginning of the command. The command has to go last.
                 wait_for needs at least 1 argument. Either --host or a command.
 
@@ -26,11 +27,13 @@ OPTIONS
                 --proto=icmp       # Proto ICMP or TCP. If ICMP port will be ignored
 
 COMMAND
+
                 every non option argument is considered as beginning of the command wait_for is supposed to execute.
                 if no command is given wait_for returns an exit status code.
 
 
 EXAMPLES
+
                 wait_for --host=myserver scp file  root@myserver:/folder/  || echo "Timeout. myserver not reachable"
                 wait_for --host=myserver ssh myserver reboot && echo "myserver is rebooting"
                 wait_for --host=myserver --port=80  &&  curl --HEAD myserver  || echo "My Server not reachable" 
