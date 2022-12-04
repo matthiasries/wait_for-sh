@@ -8,6 +8,7 @@ sleep_time=1
 connection_timeout=5
 timeout=300
 timeouted=0
+wait_time=0
 cmd=""
 go=0
 start_time=$(date +%s)
@@ -91,7 +92,7 @@ do
                         host="$value"
                         ;;
                 --port)
-                        [[ "${value//[0-9a-zA-Z]/}" == '' ]] || die 92 "--port accepts a port number or a registered service name"
+                        [[ "${value//[0-9a-zA-Z]/}" == '' ]] || die 92 "--port accepts a port number or a services name"
                         port="$value"
                         go=1
                         ;;
@@ -103,6 +104,10 @@ do
 			[[ "${value//[0-9]/}" == '' ]] || die 92 "--sleep only accepts seconds"
 			sleep="$value"
 			;;
+		--wait)
+                        [[ "${value//[0-9]/}" == '' ]] || die 92 "--sleep only accepts seconds"
+                        wait_time="$value"
+                        ;;
 		--timeout)
 			[[ "${value//[0-9]/}" == '' ]] || die 92 "--timeout only accepts seconds"
 			timeout="$value"
@@ -140,6 +145,7 @@ then
 		(echo -n "" > "/dev/$proto/$host/$port") >/dev/null 2>&1 && break
 		sleep $sleep_time
 	done
+	sleep "$wait_time"
 	[[ $timeouted != 0 ]] && exit 84 
 	[[ "$cmd" == "" ]] && exit 0
 	[[ "$cmd" != "" ]] && eval "$@"
