@@ -41,11 +41,13 @@ OPTIONS
 
 		--host=127.0.0.1   # A resolvable hostname or IP address to wait for Default is 127.0.0.1
 		--help             # Shows this help page
-		--sleep=1          # Number of seconds to sleep between checks. Default 1 seconds
+		--sleep=1          # Number of seconds to sleep between checks. Default 1 seconds. Sleep has to be a only fraction of timeout.
 		--delay=0          # Number of seconds to wait before starting to poll. Default 0 seconds
 		--wait=0           # Number of seconds to wait after the host is reachable. Default  0 seconds
-		--timeout=300      # Maximum number of seconds to wait for, when used with another condition it will force an error. Default 300 seconds
+		--timeout=300      # Maximum number of seconds to wait for, if run up it will force an error. Default 300 seconds. 
+				    Is only checked every --sleep seconds, so real timeout is only proximately --timeout
 		--port=22          # Port number to poll Default is 22 (ssh)
+		--proto=icmp       # Proto ICMP or TCP. If ICMP port will be ignored
 
 COMMAND
 		every non option argument is considered as beginning of the command wait_for is supposed to execute.
@@ -56,7 +58,7 @@ EXAMPLES
 		wait_for --host=myserver scp file  root@myserver:/folder/  || echo "Timeout. myserver not reachable"
 		wait_for --host=myserver ssh myserver reboot && echo "myserver is rebooting"
 		wait_for --host=myserver --port=80  &&  curl --HEAD myserver  || echo "My Server not reachable" 
-		wait_for --sleep=5
+		pon dsl; wait_for --proto=icmp --wait=10 --host=dyndns.mydomain.com sudo /etc/firewall restart.
 
 		if wait_for --host=mad4milk.de;
 		then
@@ -66,6 +68,14 @@ EXAMPLES
 		else
 			echo "can't do stuff"
 		fi	
+
+
+KNOWNBUGS
+
+		because I use a bash socket I can't control the timeout of said socket. I may add a netcat option.
+		Under some circumstances the there are additional 30 seconds of sleep (the socket timeout) every poll. 
+		This will reduce the poll rate and timeout will take longer. Up to 29 seconds. 
+
 
 EXIT STATUS
 		wait_for exits with 
@@ -99,10 +109,11 @@ do
 		--delay)
                         [[ "${value//[0-9]/}" == '' ]] || die 92 "--delay only accepts seconds"
                         delay="$value"
+			go=1
                         ;;
 		--sleep)
 			[[ "${value//[0-9]/}" == '' ]] || die 92 "--sleep only accepts seconds"
-			sleep="$value"
+			sleep_time="$value"
 			;;
 		--wait)
                         [[ "${value//[0-9]/}" == '' ]] || die 92 "--sleep only accepts seconds"
@@ -113,7 +124,7 @@ do
 			timeout="$value"
 			;;
 		--proto)
-			[[ "${value}" != 'tcp' && "${value}" != "udp" ]] || die 92 "--proto only accepts tcp or udp as a parameter"
+			[[ "${value}" != 'tcp' && "${value}" != "icmp" ]] && die 92 "--proto only accepts tcp or icmp as a parameter"
 			proto="$value"
 			;;
 		*)
@@ -142,7 +153,12 @@ then
 	sleep "$delay"
 	until check_timeout
 	do
-		(echo -n "" > "/dev/$proto/$host/$port") >/dev/null 2>&1 && break
+		if [[ "$proto" == "tcp" ]];
+		then
+			(echo -n "" > "/dev/$proto/$host/$port") >/dev/null 2>&1 && break
+		else
+			ping -q -W2 -c1 "$host" >/dev/null  && break
+		fi
 		sleep $sleep_time
 	done
 	sleep "$wait_time"
