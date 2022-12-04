@@ -55,6 +55,7 @@ KNOWNBUGS
 
 
 EXIT STATUS
+
                 wait_for exits with 
                         0 on success
                         84 on connect timeout
