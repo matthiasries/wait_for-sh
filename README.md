@@ -32,7 +32,7 @@ EXAMPLES
                 wait_for --host=myserver --port=80  &&  curl --HEAD myserver  || echo "My Server not reachable" 
                 wait_for --sleep=5
 
-                if wait_for --host=mad4milk.de;
+                if wait_for --host=myserver;
                 then
                         scp stuff 
                         ssh "do stuff"
