@@ -62,9 +62,9 @@ KNOWNBUGS
 EXIT STATUS
 
     wait_for exits with ( from errno-base.h/errno.h taken from the linux kernel )
-        0 on success
-        22 invalid argument
-        62 time expired
+    0  - on success
+    22 - invalid argument
+    62 - time expired
     or the return code of COMMAND
 
 ALTERNATIVES
