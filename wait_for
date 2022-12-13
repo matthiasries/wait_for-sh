@@ -14,14 +14,14 @@ go=0
 start_time=$(date +%s)
 
 die(){
-   local code=$1
-   shift
-   echo "$@"
-   exit $code
+    local code=$1
+    shift
+    echo "$@"
+    exit $code
 }
 
 usage(){
-   cat <<EOF
+    cat <<EOF
 NAME
    wait_for - wait_for a host to be reachable
 
@@ -102,91 +102,92 @@ EOF
 
 until [[ "$@" == '' ]]
 do
-   param="${1//=*/}"
-   value="${1//*=/}"
-   case $param in
-      --help)
-         usage
-         exit 1
-         ;;
-      --host)
-                        [[ "$value" == '' ]] && die 22 "--host has to be an IP or hostname" # EINVAL /* Invalid argument */
-                        go=1
-                        host="$value"
-                        ;;
-                --port)
-                        [[ "${value//[0-9a-zA-Z]/}" == '' ]] || die 22 "--port accepts a port number or a services name" # EINVAL /* Invalid argument */
-                        port="$value"
-                        go=1
-                        ;;
-      --delay)
-                        [[ "${value//[0-9]/}" == '' ]] || die 22 "--delay only accepts seconds" # EINVAL /* Invalid argument */
-                        delay="$value"
-         go=1
-                        ;;
-      --sleep)
-         [[ "${value//[0-9]/}" == '' ]] || die 22 "--sleep only accepts seconds" # EINVAL /* Invalid argument */
-         sleep_time="$value"
-         ;;
-      --wait)
-                        [[ "${value//[0-9]/}" == '' ]] || die 22 "--sleep only accepts seconds" # EINVAL /* Invalid argument */
-                        wait_time="$value"
-                        ;;
-      --timeout)
-         [[ "${value//[0-9]/}" == '' ]] || die 22 "--timeout only accepts seconds" # EINVAL /* Invalid argument */
-         timeout="$value"
-         ;;
-      --proto)
-         [[ "${value}" != 'tcp' && "${value}" != "icmp" ]] && die 22 "--proto only accepts tcp or icmp as a parameter" # EINVAL /* Invalid argument */
-         proto="$value"
-         ;;
-      --icmp)
-         proto="icmp"
-         ;;
-      *)
-         if [[ "$host" == "" ]]; then
+    param="${1//=*/}"
+    value="${1//*=/}"
+    case $param in
+        --help)
+            usage
+            exit 1
+            ;;
+        --host)
+            [[ "$value" == '' ]] && die 22 "--host has to be an IP or hostname" # EINVAL /* Invalid argument */
             go=1
-            host=$1
-            shift
-            continue
-         fi
-         cmd="$@"
-         go=1
-         break
-         ;;
-   esac
-   shift
+            host="$value"
+            ;;
+        --port)
+            [[ "${value//[0-9a-zA-Z]/}" == '' ]] || die 22 "--port accepts a port number or a services name" # EINVAL /* Invalid argument */
+            port="$value"
+            go=1
+            ;;
+        --delay)
+            [[ "${value//[0-9]/}" == '' ]] || die 22 "--delay only accepts seconds" # EINVAL /* Invalid argument */
+            delay="$value"
+            go=1
+            ;;
+        --sleep)
+            [[ "${value//[0-9]/}" == '' ]] || die 22 "--sleep only accepts seconds" # EINVAL /* Invalid argument */
+            sleep_time="$value"
+            ;;
+        --wait)
+            [[ "${value//[0-9]/}" == '' ]] || die 22 "--sleep only accepts seconds" # EINVAL /* Invalid argument */
+            wait_time="$value"
+            ;;
+        --timeout)
+            [[ "${value//[0-9]/}" == '' ]] || die 22 "--timeout only accepts seconds" # EINVAL /* Invalid argument */
+            timeout="$value"
+            ;;
+        --proto)
+            [[ "${value}" != 'tcp' && "${value}" != "icmp" ]] && die 22 "--proto only accepts tcp or icmp as a parameter" # EINVAL /* Invalid argument */
+            proto="$value"
+            ;;
+        --icmp)
+            proto="icmp"
+            ;;
+        *)
+            if [[ "$host" == "" ]];
+            then
+                go=1
+                host=$1
+                shift
+                continue
+            fi
+            cmd="$@"
+            go=1
+            break
+            ;;
+    esac
+    shift
 done
 
 real_timeout=$((delay+timeout))
 
 check_timeout(){
-   if [[ $(($(date +%s)-start_time)) -gt $real_timeout ]];
-   then
-      timeouted=1
-      return 0
-   fi
-   return 1
+    if [[ $(($(date +%s)-start_time)) -gt $real_timeout ]];
+    then
+        timeouted=1
+        return 0
+    fi
+    return 1
 }
 
 
 if [[ $go -eq 1 ]];
 then
-   sleep "$delay"
-   until check_timeout
-   do
-      if [[ "$proto" == "tcp" ]];
-      then
-         (echo -n "" > "/dev/$proto/$host/$port") >/dev/null 2>&1 && break
-      else
-         ping -q -W2 -c1 "$host" >/dev/null  && break
-         [[ $? > 1 ]] && die 101 "Network is unreachable" # ENETUNREACH  /* Network is unreachable */
-      fi
-      sleep $sleep_time
-   done
-   sleep "$wait_time"
-   [[ $timeouted != 0 ]] && exit 62 # ETIME /* Timer expired */
-   [[ "$cmd" == "" ]]    && exit  0 # success
-   [[ "$cmd" != "" ]]    && eval "$@"
+    sleep "$delay"
+    until check_timeout
+    do
+    if [[ "$proto" == "tcp" ]];
+    then
+        (echo -n "" > "/dev/$proto/$host/$port") >/dev/null 2>&1 && break
+    else
+        ping -q -W2 -c1 "$host" >/dev/null  && break
+        [[ $? > 1 ]] && die 101 "Network is unreachable" # ENETUNREACH  /* Network is unreachable */
+    fi
+        sleep $sleep_time
+    done
+    sleep "$wait_time"
+    [[ $timeouted != 0 ]] && exit 62 # ETIME /* Timer expired */
+    [[ "$cmd" == "" ]]    && exit  0 # success
+    [[ "$cmd" != "" ]]    && eval "$@"
 fi
 exit $status
