@@ -17,10 +17,12 @@ cmd=""
 go=0
 start_time=$(date +%s)
 method=1
-netcatcommands="netcat
-		nc.openbsd
-		nc.traditional
-		nc"
+netcatcommands=(
+ "netcat"
+ "nc.openbsd"
+ "nc.traditional"
+ "nc"
+)
 netcatcmd="ERROR netcat command not found"
 
 die(){
@@ -185,7 +187,7 @@ check_timeout(){
     return 1
 }
 
-for nc in $netcatcommands;
+for nc in ${netcatcommands[@]};
 do
 	if $nc -h 1>/dev/null 2>&1;
 	then
