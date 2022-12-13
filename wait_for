@@ -21,14 +21,15 @@ die(){
 }
 
 usage(){
-    cat <<EOF
+    cat <<'EOF'
 NAME
-   wait_for - wait_for a host to be reachable
+
+    wait_for - wait_for a host to be reachable
 
 
 SYNOPSIS
 
-   wait_for ( [--option=value] | host )[command]
+    wait_for ([--option=value] | host) [command]
 
 
 DESCRIPTION
@@ -39,40 +40,40 @@ DESCRIPTION
 
 OPTIONS
 
-	--sleep=1          # Number of seconds to sleep between checks. Default 1 seconds. Sleep has to be a only fraction of timeout.
-	--delay=0          # Number of seconds to wait before starting to poll. Default 0 seconds
-	--wait=0           # Number of seconds to wait after the host is reachable. Default  0 seconds
-	--timeout=300      # Maximum number of seconds to wait for, if run up it will force an error. Default 300 seconds.
+    --sleep=1          # Number of seconds to sleep between checks. Default is 1 sec. sleep can't be bigger than timeout
+    --delay=0          # Number of seconds to wait before starting to check the host. Default is 0 secs
+    --wait=0           # Number of seconds to wait after the host is reachable. Default is 0 sec
+    --timeout=300      # Maximum number of seconds to wait for, if run up it will force an error. Default 300 seconds.
                 Is only checked every --sleep seconds, so real timeout is only proximately --timeout
-	--port=22          # Port number to poll Default is 22 (ssh)
-	--proto=icmp       # Proto ICMP or TCP. If ICMP port will be ignored
-	--help             # Shows this help page
-	--host=host        # A resolvable hostname or IP address to wait for.
+    --port=22          # Port number to poll Default is 22 (ssh)
+    --proto=icmp       # Proto ICMP or TCP. If ICMP port will be ignored
+    --help             # Shows this help page
+    --host=host        # A resolvable hostname or IP address to wait for.
 
 COMMAND
 
-    if --host is not give then the first argument is the host.
-    In any other case, every non option argument is  considered as beginning of the command wait_for is supposed to execute.
+    if --host is not give then the first argument is used as host.
+    In any other case, every non option argument is considered as beginning of the command wait_for is supposed to execute.
     if no command is given "wait_for" just returns an exit status code after finishing.
 
 
 EXAMPLES
 
-	wait_for myserver scp file root@myserver:/folder/  || echo "Timeout. myserver not reachable"
-	wait_for --port=80 myserver && curl --HEAD http://myserver/ && notify-send --hint string:sound-name:dialog-ok "Server back up"
-	wait_for --icmp --wait=300 my-super-secure-server && ssh my-super-secure-server systemctl restart start   # better not provoke fail2ban
-	pon dsl; wait_for --icmp --wait=10 --host=dyndns.mydomain.com sudo /etc/firewall restart.
+    wait_for myserver scp file root@myserver:/folder/  || echo "Timeout. myserver not reachable"
+    wait_for --port=80 myserver && curl --HEAD http://myserver/ && notify-send --hint string:sound-name:dialog-ok "Server back up"
+    wait_for --icmp --wait=300 my-super-secure-server && ssh my-super-secure-server systemctl restart start   # better not provoke fail2ban
+    pon dsl; wait_for --icmp --wait=10 --host=dyndns.mydomain.com sudo /etc/firewall restart.
 
-	if ./wait_for --mad4milk.de;
-	then
-		echo "do stuff"
-	else
-		case $? in
-			22) echo "invalid argument. can't do stuff";;
-			66) echo "timeout. can't do stuff";;
-			*)  echo "$? something unexpectet happend";;
-		esac
-	fi
+    if ./wait_for --mad4milk.de;
+    then
+        echo "do stuff"
+    else
+        case $? in
+            22) echo "invalid argument. can't do stuff";;
+            66) echo "timeout. can't do stuff";;
+            *)  echo "$? something unexpectet happend";;
+        esac
+    fi
 
 
 KNOWNBUGS
@@ -84,11 +85,11 @@ KNOWNBUGS
 
 EXIT STATUS
 
-	wait_for exits with ( from errno-base.h/errno.h taken from the linux kernel )
-		0 on success
-		22 invalid argument
-		62 time expired
-	or the return code of COMMAND
+    wait_for exits with ( from errno-base.h/errno.h taken from the linux kernel )
+    0  - on success
+    22 - invalid argument
+    62 - time expired
+    or the return code of COMMAND
 
 ALTERNATIVES
 
