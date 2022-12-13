@@ -1,5 +1,9 @@
 #!/bin/bash
 
+# bash strict
+IFS=$'\n\t'
+set -euo pipefail
+
 host=""
 port=22
 delay=0
@@ -12,6 +16,12 @@ wait_time=0
 cmd=""
 go=0
 start_time=$(date +%s)
+method=1
+netcatcommands="netcat
+		nc.openbsd
+		nc.traditional
+		nc"
+netcatcmd="ERROR netcat command not found"
 
 die(){
     local code=$1
@@ -175,6 +185,15 @@ check_timeout(){
     return 1
 }
 
+for nc in $netcatcommands;
+do
+	if $nc -h 1>/dev/null 2>&1;
+	then
+       		method=2
+		netcatcmd="$nc"
+		break
+	fi
+done
 
 if [[ $go -eq 1 ]];
 then
@@ -183,7 +202,8 @@ then
     do
     if [[ "$proto" == "tcp" ]];
     then
-        (echo -n "" > "/dev/$proto/$host/$port") >/dev/null 2>&1 && break
+        [[ $method -eq 1  ]] && (echo -n "" > "/dev/$proto/$host/$port") >/dev/null 2>&1 && break
+	[[ $method -eq 2  ]] && $netcatcmd -d -z -w 1 "$host" "$port"  && break
     else
         ping -q -W2 -c1 "$host" >/dev/null  && break
         [[ $? > 1 ]] && die 101 "Network is unreachable" # ENETUNREACH  /* Network is unreachable */
