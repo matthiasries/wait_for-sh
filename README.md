@@ -25,6 +25,7 @@ OPTIONS
     --proto=icmp       # Proto ICMP or TCP.
     --port=22          # Port number to poll (Default:22/ssh) (unless icmp)
     --host=host        # A resolvable hostname or IP address.
+    --usage            # Shows this
     --help             # Shows this help page
 
 COMMAND
