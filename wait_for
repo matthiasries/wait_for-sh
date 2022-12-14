@@ -9,7 +9,6 @@ port=22
 delay=0
 proto="tcp"
 sleep_time=1
-connection_timeout=5
 timeout=300
 timeouted=0
 wait_time=0
@@ -124,7 +123,7 @@ look into the ssh_config manpage."ConnectionAttempts" could be the option for yo
 EOF
 }
 
-until [[ "$@" == '' ]]
+until [[ "$*" == '' ]]
 do
     param="${1//=*/}"
     value="${1//*=/}"
@@ -203,7 +202,7 @@ do
 		break
 	fi
 done
-
+set -x 
 if [[ $go -eq 1 ]];
 then
     sleep "$delay"
@@ -213,9 +212,10 @@ then
     then
         [[ $method -eq 1  ]] && (echo -n "" > "/dev/$proto/$host/$port") >/dev/null 2>&1 && break
 	[[ $method -eq 2  ]] && $netcatcmd -d -z -w 1 "$host" "$port"  && break
+	status=$?
     else
         ping -q -W2 -c1 "$host" >/dev/null  && break
-        [[ $? > 1 ]] && die 101 "Network is unreachable" # ENETUNREACH  /* Network is unreachable */
+        [[ $? -gt 1 ]] && die 101 "Network is unreachable" # ENETUNREACH  /* Network is unreachable */
     fi
         sleep $sleep_time
     done
@@ -223,5 +223,6 @@ then
     [[ $timeouted != 0 ]] && exit 62 # ETIME /* Timer expired */
     [[ "$cmd" == "" ]]    && exit  0 # success
     [[ "$cmd" != "" ]]    && eval "$@"
+    status=$?
 fi
 exit $status
