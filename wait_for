@@ -32,6 +32,24 @@ die(){
 
 usage(){
     cat <<'EOF'
+    wait_for ([--option=value] | host) [command]
+
+    --sleep=1          # Number of seconds to sleep between checks. (default:1)
+    --delay=0          # Number of seconds to wait before starting to check the host. (default:0)
+    --wait=0           # Number of seconds to wait after the host is reachable. (default:0)
+    --timeout=300      # Number of seconds after which wait_for should abord with an timeout. (default:1)
+    --icmp             # ping host instead of a tcp connection to port.
+    --proto=icmp       # Proto ICMP or TCP.
+    --port=22          # Port number to poll (Default:22/ssh) (unless icmp)
+    --host=host        # A resolvable hostname or IP address.
+    --usage            # Shows this 
+    --help             # Shows this help page
+
+EOF
+}
+help(){
+    cat <<'EOF'
+
 NAME
 
     wait_for - wait_for a host to be reachable
@@ -128,10 +146,8 @@ do
     param="${1//=*/}"
     value="${1//*=/}"
     case $param in
-        --help)
-            usage
-            exit 1
-            ;;
+	--usage) usage; exit 1 ;;
+        --help)  help ; exit 1 ;;
         --host)
             [[ "$value" == '' ]] && die 22 "--host has to be an IP or hostname" # EINVAL /* Invalid argument */
             go=1
@@ -140,12 +156,10 @@ do
         --port)
             [[ "${value//[0-9a-zA-Z]/}" == '' ]] || die 22 "--port accepts a port number or a services name" # EINVAL /* Invalid argument */
             port="$value"
-            go=1
             ;;
         --delay)
             [[ "${value//[0-9]/}" == '' ]] || die 22 "--delay only accepts seconds" # EINVAL /* Invalid argument */
             delay="$value"
-            go=1
             ;;
         --sleep)
             [[ "${value//[0-9]/}" == '' ]] || die 22 "--sleep only accepts seconds" # EINVAL /* Invalid argument */
@@ -166,6 +180,7 @@ do
         --icmp)
             proto="icmp"
             ;;
+        --*) usage; exit 1 ;;	    
         *)
             if [[ "$host" == "" ]];
             then
@@ -174,8 +189,7 @@ do
                 shift
                 continue
             fi
-            cmd="$@"
-            go=1
+	    cmd="$@"
             break
             ;;
     esac
@@ -202,7 +216,7 @@ do
 		break
 	fi
 done
-set -x 
+
 if [[ $go -eq 1 ]];
 then
     sleep "$delay"
@@ -224,5 +238,9 @@ then
     [[ "$cmd" == "" ]]    && exit  0 # success
     [[ "$cmd" != "" ]]    && eval "$@"
     status=$?
+else
+    usage
+    die 22 "not enougth parameters: at least a host is needed"
+
 fi
 exit $status

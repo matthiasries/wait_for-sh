@@ -1,3 +1,4 @@
+
 NAME
 
     wait_for - wait_for a host to be reachable
@@ -35,10 +36,10 @@ if no command is given "wait_for" just returns an exit status code after finishi
 
 BASH ONLY OR NETCAT
 
-    wait_for works with only bash installed. But if netcat is present it uses netcat instead.
-    It is looking for netcat, nc.openbsd, nc.traditional, or nc in $PATH.
-    If the binary has a different name it can be enforced by setting the environment variable NETCATCMD 
-    export NETCATCMD=/usr/local/bin/netcat.bin
+wait_for works with only bash installed. But if netcat is present it uses netcat instead.
+It is looking for netcat, nc.openbsd, nc.traditional, or nc in $PATH.
+If the binary has a different name it can be enforced by setting the environment variable NETCATCMD 
+export NETCATCMD=/usr/local/bin/netcat.bin
 
 
 EXAMPLES
